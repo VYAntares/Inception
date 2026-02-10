@@ -1,0 +1,60 @@
+# srcs/docker-compose.yml
+
+services:
+  mariadb:
+    build: ./requirements/mariadb     # location of Dockerfile
+    container_name: mariadb           # name of container on the network
+    env_file: .env                    # charge .env
+    secrets:                          # passwords
+      - db_password
+      - db_root_password
+    volumes:
+      - mariadb_data:/var/lib/mysql   # data stored on host, not in container
+    networks:
+      - inception                     # network shared by the 3
+    restart: unless-stopped           # restart if crash
+  
+  wordpress:
+    build: ./requirements/wordpress
+    container_name: wordpress
+    env_file: .env
+    secrets:
+      - db_password
+      - db_root_password
+    volumes:
+      - wordpress_data:/var/www/html  # wordpress files
+    networks:
+      - inception
+    restart: unless-stopped
+    depends_on:
+      - mariadb                       # starts after mariadb, 
+                                      # but doesn't mean mariadb is ready
+  nginx:
+    build: ./requirements/nginx
+    container_name: nginx
+    env_file: .env
+    volumes:
+      - wordpress_data:/var/www/html  # same volume as wordpress
+    ports:
+      - 443:443                       # only entry point from internet
+    networks:
+      - inception
+    restart: unless-stopped
+    depends_on:
+      - wordpress
+
+volumes:
+  mariadb_data:
+    driver: local                     # stocked on the pc directly
+  wordpress_data:
+    driver: local
+
+networks:
+  inception:
+    driver: bridge                    # intern network for the 3 containers
+
+secrets:
+  db_password:
+    file: ../secrets/db_password.txt
+  db_root_password:
+    file: ../secrets/db_root_password.txt
