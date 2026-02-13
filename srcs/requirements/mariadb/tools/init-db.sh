@@ -4,8 +4,12 @@
 
 # Vérifie si MariaDB a déjà été initialisé
 # Le dossier /var/lib/mysql/mysql est créé lors de la première installation
-if [ ! -d "/var/lib/mysql/${DB_NAME}" ]; then
+if [ ! -d "/var/lib/mysql/mysql" ]; then
 	echo "First installation..."
+	
+	# Charge les secrets depuis les fichiers Docker
+	DB_PASSWORD=$(cat /run/secrets/db_password)
+	DB_ROOT_PASSWORD=$(cat /run/secrets/db_root_password)
 	
 	# Initialise la structure de base de MariaDB
 	# Crée les tables système et les fichiers nécessaires
@@ -13,21 +17,28 @@ if [ ! -d "/var/lib/mysql/${DB_NAME}" ]; then
 	# --datadir : Spécifie où créer les données (même chemin que dans 50-server.cnf)
 	mysql_install_db --user=mysql --datadir=/var/lib/mysql
 	
-	# Lance MariaDB en mode bootstrap (temporaire) pour la configuration
-	# --bootstrap : Mode spécial qui lit les commandes SQL depuis stdin et s'arrête après
-	
-	# Crée la base de données WordPress (variable ${DB_NAME} du .env)
-	# Crée l'utilisateur WordPress (${DB_USER}@'%' avec ${DB_PASSWORD})
-	# Donne tous les droits à cet utilisateur sur la base
-	# Sécurise root avec un mot de passe (${DB_ROOT_PASSWORD})
-	# Applique les changements avec FLUSH PRIVILEGES
-	mysqld --user=mysql --bootstrap << EOF
-	CREATE DATABASE IF NOT EXISTS ${DB_NAME};
-	CREATE USER '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}';
-	GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'%';
-	ALTER USER 'root'@'localhost' IDENTIFIED BY '${DB_ROOT_PASSWORD}';
-	FLUSH PRIVILEGES;
+	# Crée un fichier SQL temporaire pour l'initialisation
+	# On utilise un fichier pour éviter les problèmes avec --bootstrap
+	cat > /tmp/init.sql << EOF
+USE mysql;
+FLUSH PRIVILEGES;
+CREATE DATABASE IF NOT EXISTS ${DB_NAME};
+CREATE USER '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}';
+GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'%';
+ALTER USER 'root'@'localhost' IDENTIFIED BY '${DB_ROOT_PASSWORD}';
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '${DB_ROOT_PASSWORD}' WITH GRANT OPTION;
+DELETE FROM mysql.user WHERE User='';
+DELETE FROM mysql.user WHERE User='mysql';
+DELETE FROM mysql.db WHERE User='';
+FLUSH PRIVILEGES;
 EOF
+	
+	# Lance MariaDB en mode bootstrap avec le fichier SQL
+	# Cette méthode est plus fiable que stdin
+	mysqld --user=mysql --bootstrap < /tmp/init.sql
+	
+	# Supprime le fichier temporaire (sécurité)
+	rm -f /tmp/init.sql
 fi
 
 # Lance MariaDB en mode foreground (premier plan)

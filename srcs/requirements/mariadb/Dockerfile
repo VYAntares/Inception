@@ -3,10 +3,13 @@ FROM debian:bullseye
 
 # Installation de MariaDB (serveur + client)
 RUN apt-get update && \
-	apt-get install -y mariadb-server && \
+	apt-get install -y mariadb-server mariadb-client && \
+	rm -rf /var/lib/apt/lists/*
+
+# ⚠️ IMPORTANT : Supprime les données créées par l'installation
+RUN rm -rf /var/lib/mysql/*
 
 # Création du dossier socket (nécessaire pour MariaDB)
-# chown : donne les droits à l'utilisateur mysql
 RUN mkdir -p /run/mysqld && \
 	chown mysql:mysql /run/mysqld
 
