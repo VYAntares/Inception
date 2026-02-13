@@ -4,7 +4,7 @@
 
 # Vérifie si MariaDB a déjà été initialisé
 # Le dossier /var/lib/mysql/mysql est créé lors de la première installation
-if [ ! -d "/var/lib/mysql/mysql" ]; then
+if [ ! -d "/var/lib/mysql/${DB_NAME}" ]; then
 	echo "First installation..."
 	
 	# Initialise la structure de base de MariaDB

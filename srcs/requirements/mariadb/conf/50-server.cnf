@@ -1,7 +1,7 @@
 [mysqld]
 bind-address	= 0.0.0.0
 # ecoute sur toutes les interfaces reseau
-# permet a NGINX et WordPress de se connecter depuis d'autres conteneurs
+# permet a WordPress de se connecter depuis d'autres conteneurs
 port			= 3306
 # port standard de MySQL/MariaDB
 # c'est le port interne au conteneur
