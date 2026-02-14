@@ -21,6 +21,7 @@ services:
     secrets:
       - db_password
       - db_root_password
+      - credentials
     volumes:
       - wordpress_data:/var/www/html  # wordpress files
     networks:
@@ -58,3 +59,5 @@ secrets:
     file: ../secrets/db_password.txt
   db_root_password:
     file: ../secrets/db_root_password.txt
+  credentials:
+    file: ../secrets/credentials.txt

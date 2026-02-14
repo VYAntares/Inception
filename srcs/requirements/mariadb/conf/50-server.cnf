@@ -2,16 +2,19 @@
 bind-address	= 0.0.0.0
 # ecoute sur toutes les interfaces reseau
 # permet a WordPress de se connecter depuis d'autres conteneurs
+
 port			= 3306
 # port standard de MySQL/MariaDB
 # c'est le port interne au conteneur
+
 datadir			= /var/lib/mysql
 # ou MariaDB stocke ses donnees
 # c'est la qu'on va monter notre volume
+
 socket			= /run/mysqld/mysqld.sock
 # fichier socket pour les connexions locales
 # utile pour les commandes dans le conteneur
+
 skip-name-resolve
 # ↑ Optimisation de perf
 # Évite les résolutions DNS inutiles
-
