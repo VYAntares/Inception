@@ -29,4 +29,4 @@ RUN chmod +x /usr/local/bin/init-nginx.sh
 EXPOSE 443
 
 # Lance le script au démarrage du conteneur
-ENTRYPOINT ["usr/local/bin/init-nginx.sh"]
+ENTRYPOINT ["/usr/local/bin/init-nginx.sh"]

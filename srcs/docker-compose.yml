@@ -2,6 +2,7 @@
 
 services:
   mariadb:
+    image: mariadb
     build: ./requirements/mariadb     # location of Dockerfile
     container_name: mariadb           # name of container on the network
     env_file: .env                    # charge .env
@@ -15,6 +16,7 @@ services:
     restart: unless-stopped           # restart if crash
   
   wordpress:
+    image: wordpress
     build: ./requirements/wordpress
     container_name: wordpress
     env_file: .env
@@ -31,6 +33,7 @@ services:
       - mariadb                       # starts after mariadb, 
                                       # but doesn't mean mariadb is ready
   nginx:
+    image: nginx
     build: ./requirements/nginx
     container_name: nginx
     env_file: .env

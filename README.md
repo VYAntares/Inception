@@ -52,11 +52,11 @@ Virtual Machine                Docker Container
 ┌──────────────┐               ┌──────────────┐
 │ Application  │               │ Application  │
 ├──────────────┤               ├──────────────┤
-│  Full OS     │  ← Heavy      │Dependencies  │  ← Light
+│ Full OS      │  ← Heavy      │ Dependencies │  ← Light
 ├──────────────┤               ├──────────────┤
-│  Hypervisor  │               │ Docker Engine│
+│ Hypervisor   │               │ Docker Engine│
 ├──────────────┤               ├──────────────┤
-│  Host OS     │               │  Host OS     │
+│ Host OS      │               │ Host OS      │
 └──────────────┘               └──────────────┘
 
 Startup : ~2 minutes           Startup : ~2 seconds
