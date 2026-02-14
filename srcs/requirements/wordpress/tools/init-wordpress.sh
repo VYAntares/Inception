@@ -43,6 +43,27 @@ else
 		--allow-root
 
 	chown -R www-data:www-data /var/www/html
+	#  │   │     │         │          │
+	#  │   │     │         │          └─ Dossier concerné
+	#  │   │     │         └─ Groupe propriétaire
+	#  │   │     └─ Utilisateur propriétaire  
+	#  │   └─ Récursif (tous les fichiers/dossiers à l'intérieur)
+	#  └─ Commande "change owner" (changer propriétaire)
+	#
+	#  ❌ Sans chown :
+	#  ├─ /var/www/html (propriétaire: root)
+	#  ├─ wp-config.php (propriétaire: root)
+	#  └─ wp-content/ (propriétaire: root)
+	#
+	# PHP-FPM (www-data) essaie d'écrire → ❌ PERMISSION DENIED
+	#
+	# ✅ Avec chown :
+	# ├─ /var/www/html (propriétaire: www-data)
+	# ├─ wp-config.php (propriétaire: www-data)
+	# └─ wp-content/ (propriétaire: www-data)
+	#
+	# PHP-FPM (www-data) essaie d'écrire → ✅ OK !
+
 
 fi
 
