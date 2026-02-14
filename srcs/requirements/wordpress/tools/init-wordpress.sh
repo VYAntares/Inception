@@ -29,9 +29,9 @@ else
 	wp core install \
 		--url=https://${DOMAIN_NAME} \
 		--title="Inception." \
-		--admin_user=admin \
+		--admin_user=eahmeti \
 		--admin_password=${wp_admin_password} \
-		--admin_email=admin@example.com \
+		--admin_email=eahmeti@example.com \
 		--allow-root
 
 	# Crée un deuxième utilisateur (non-admin)
