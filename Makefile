@@ -22,9 +22,7 @@ NC = \033[0m # No Color
 # Règle par défaut : build + up
 #──────────────────────────────────────────────────────────────
 
-all:
-	@$(MAKE) setup
-	@$(MAKE) up
+all: setup all
 
 #──────────────────────────────────────────────────────────────
 # Configuration initiale
