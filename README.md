@@ -51,16 +51,16 @@ All services run in separate Docker containers, communicate through a private ne
 
 ```
 ┌────────────────────────────────────────────────────────────┐
-│                    Internet / Browser                       │
-│                   https://eahmeti.42.fr                     │
+│                    Internet / Browser                      │
+│                   https://eahmeti.42.fr                    │
 └───────────────────────────┬────────────────────────────────┘
                             │
                             │ HTTPS (Port 443)
                             │ TLS v1.2/v1.3
                             ▼
                    ┌────────────────┐
-                   │     NGINX      │
-                   │ (debian:11)    │  ← Reverse Proxy + SSL Termination
+                   │      NGINX     │
+                   │   (debian:11)  │  ← Reverse Proxy + SSL Termination
                    │                │  ← Serves static files directly
                    └────────┬───────┘
                             │
@@ -68,8 +68,8 @@ All services run in separate Docker containers, communicate through a private ne
                             │ Internal only
                             ▼
                    ┌────────────────┐
-                   │   WordPress    │
-                   │ (debian:11)    │  ← PHP-FPM processes PHP files
+                   │    WordPress   │
+                   │   (debian:11)  │  ← PHP-FPM processes PHP files
                    │   + PHP-FPM    │  ← Generates dynamic content
                    └────────┬───────┘
                             │
@@ -77,8 +77,8 @@ All services run in separate Docker containers, communicate through a private ne
                             │ Internal only
                             ▼
                    ┌────────────────┐
-                   │    MariaDB     │
-                   │ (debian:11)    │  ← Stores WordPress data
+                   │     MariaDB    │
+                   │   (debian:11)  │  ← Stores WordPress data
                    │                │  ← Users, posts, settings, etc.
                    └────────────────┘
 
@@ -126,49 +126,6 @@ make
 
 ## 📦 Installation
 
-### Prerequisites
-
-Before starting, ensure you have:
-
-- **Virtual Machine** running Debian 12 (Bookworm) or Debian 11 (Bullseye)
-- **Docker** and **Docker Compose V2** installed
-- **Make** utility installed
-- **Git** for cloning the repository
-
-#### Install Docker on Debian
-
-```bash
-# Update package index
-sudo apt update
-
-# Install dependencies
-sudo apt install -y ca-certificates curl gnupg
-
-# Add Docker's official GPG key
-sudo install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/debian/gpg | \
-  sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-sudo chmod a+r /etc/apt/keyrings/docker.gpg
-
-# Set up the repository
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-  https://download.docker.com/linux/debian \
-  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-# Install Docker Engine
-sudo apt update
-sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-# Add your user to docker group (to run Docker without sudo)
-sudo usermod -aG docker $USER
-newgrp docker
-
-# Verify installation
-docker --version
-docker compose version
-```
 
 ### Step 1: Clone the Repository
 
@@ -230,8 +187,12 @@ The `.env` file is already configured in `srcs/.env`. If you changed your login,
 ```bash
 nano srcs/.env
 
-# Update this line:
-DOMAIN_NAME=your_login.42.fr
+DOMAIN_NAME=eahmeti.42.fr
+
+DB_NAME=wordpress
+DB_USER=wpuser
+
+MYSQL_HOST=mariadb
 ```
 
 ### Step 6: Build and Launch
@@ -382,36 +343,35 @@ inception/
 ├── .gitignore                        # Git ignore rules (includes secrets/)
 │
 ├── secrets/                          # 🔒 NOT in Git - create manually
-│   ├── db_root_password.txt         # MariaDB root password
-│   ├── db_password.txt              # MariaDB WordPress user password
-│   └── credentials.txt              # WordPress admin and user passwords
+│   ├── db_root_password.txt          # MariaDB root password
+│   ├── db_password.txt               # MariaDB WordPress user password
+│   └── credentials.txt               # WordPress admin and user passwords
 │
-└── srcs/                            # Source files (required by subject)
-    ├── .env                         # Environment variables
-    ├── docker-compose.yml           # Service orchestration
-    │
-    └── requirements/                # Service-specific files
+└── srcs/                             # Source files (required by subject)
+    ├── .env                          # Environment variables
+    ├── docker-compose.yml            # Service orchestration
+    └── requirements/                 # Service-specific files
         │
         ├── mariadb/
-        │   ├── Dockerfile           # MariaDB image definition
+        │   ├── Dockerfile            # MariaDB image definition
         │   ├── conf/
-        │   │   └── 50-server.cnf    # MariaDB server configuration
+        │   │   └── 50-server.cnf     # MariaDB server configuration
         │   └── tools/
-        │       └── init-db.sh       # Database initialization script
+        │       └── init-db.sh        # Database initialization script
         │
         ├── wordpress/
-        │   ├── Dockerfile           # WordPress + PHP-FPM image
+        │   ├── Dockerfile            # WordPress + PHP-FPM image
         │   ├── conf/
-        │   │   └── www.conf         # PHP-FPM pool configuration
+        │   │   └── www.conf          # PHP-FPM pool configuration
         │   └── tools/
         │       └── init-wordpress.sh # WordPress setup script (WP-CLI)
         │
         └── nginx/
-            ├── Dockerfile           # NGINX image definition
+            ├── Dockerfile            # NGINX image definition
             ├── conf/
-            │   └── nginx.conf       # NGINX server configuration
+            │   └── nginx.conf        # NGINX server configuration
             └── tools/
-                └── init-nginx.sh    # SSL certificate generation script
+                └── init-nginx.sh     # SSL certificate generation script
 ```
 
 ---
@@ -497,14 +457,14 @@ A **Docker container** is a running instance of an image - it's the actual envir
 **Think of it as:** An object instance in OOP, or a house built from a blueprint.
 
 ```
-┌─────────────────┐        docker run         ┌─────────────────┐
-│  Docker Image   │  ──────────────────────>  │ Docker Container│
-│   (Template)    │                            │   (Instance)    │
-└─────────────────┘                            └─────────────────┘
-      ↑                                              ↑
- docker build                                   Running process
-      │                                              │
- Dockerfile                                   Isolated environment
+┌────────────────┐        docker run         ┌──────────────────┐
+│  Docker Image  │  ──────────────────────>  │ Docker Container │
+│   (Template)   │                           │    (Instance)    │
+└────────────────┘                           └──────────────────┘
+        ↑                                              ↑
+   docker build                                 Running process
+        │                                              │
+    Dockerfile                                 Isolated environment
 ```
 
 **Example:**
@@ -529,15 +489,15 @@ A **Docker Network** creates an isolated virtual network where containers can co
 ```
 Docker Network "inception" (bridge mode)
 ┌─────────────────────────────────────────────────┐
-│                                                  │
-│  nginx ←──────→ wordpress ←──────→ mariadb      │
-│   (container)     (container)       (container) │
-│                                                  │
+│                                                 │
+│    nginx ←──────→ wordpress ←──────→ mariadb    │
+│  (container)     (container)       (container)  │
+│                                                 │
 │  Internal DNS: Docker resolves names            │
 │  • nginx → 172.18.0.2                           │
 │  • wordpress → 172.18.0.3                       │
 │  • mariadb → 172.18.0.4                         │
-│                                                  │
+│                                                 │
 └──────────────────┬──────────────────────────────┘
                    │
                    │ Only port 443 exposed
@@ -863,276 +823,6 @@ GRANT ALL PRIVILEGES ON *.* TO 'wpuser'@'%';
 - ✅ WordPress user has minimal database privileges
 - ✅ No passwords in environment variables or Dockerfiles
 - ✅ All services run as non-root users (www-data, mysql)
-
----
-
-## 🐛 Troubleshooting
-
-### Common Issues and Solutions
-
-#### Issue 1: "Site can't be reached" or "Connection refused"
-
-**Symptoms:**
-- Browser shows "This site can't be reached"
-- `curl https://eahmeti.42.fr` fails
-
-**Diagnosis:**
-```bash
-# Check if containers are running
-docker compose -f srcs/docker-compose.yml ps
-
-# Check if NGINX is listening
-docker exec -it nginx netstat -tuln | grep 443
-```
-
-**Solutions:**
-
-1. **Check /etc/hosts:**
-```bash
-cat /etc/hosts | grep eahmeti.42.fr
-# Should show: 127.0.0.1 eahmeti.42.fr
-
-# If missing, add it:
-echo "127.0.0.1 eahmeti.42.fr" | sudo tee -a /etc/hosts
-```
-
-2. **Check container status:**
-```bash
-make ps
-
-# If containers are not running:
-make down
-make up
-
-# Check logs for errors:
-make logs
-```
-
-3. **Check firewall:**
-```bash
-# On the VM, check if port 443 is blocked
-sudo iptables -L -n | grep 443
-
-# If needed, allow port 443
-sudo iptables -A INPUT -p tcp --dport 443 -j ACCEPT
-```
-
----
-
-#### Issue 2: "WordPress Error Establishing Database Connection"
-
-**Symptoms:**
-- White page with "Error establishing a database connection"
-- WordPress can't connect to MariaDB
-
-**Diagnosis:**
-```bash
-# Check if MariaDB is running
-docker logs mariadb
-
-# Try connecting manually
-docker exec -it wordpress mysql -h mariadb -u wpuser -p
-# Password: content of secrets/db_password.txt
-```
-
-**Solutions:**
-
-1. **Check MariaDB is ready:**
-```bash
-# MariaDB logs should show:
-# "mysqld: ready for connections"
-
-docker logs mariadb | grep "ready for connections"
-```
-
-2. **Verify database credentials:**
-```bash
-# Check .env file
-cat srcs/.env
-
-# Verify secrets exist
-cat secrets/db_password.txt
-cat secrets/db_root_password.txt
-```
-
-3. **Restart WordPress after MariaDB is ready:**
-```bash
-docker restart wordpress
-
-# WordPress init script waits for MariaDB with mysqladmin ping
-docker logs wordpress
-# Should show: "MariaDB is ready!"
-```
-
-4. **Check database was created:**
-```bash
-docker exec -it mariadb mysql -u root -p
-# Password: content of secrets/db_root_password.txt
-
-# Once connected:
-SHOW DATABASES;
-# Should list: wordpress
-
-USE wordpress;
-SHOW TABLES;
-# Should show WordPress tables (wp_posts, wp_users, etc.)
-```
-
----
-
-#### Issue 3: "Permission denied" on volumes
-
-**Symptoms:**
-- WordPress can't create files
-- Upload fails
-- Plugin installation fails
-
-**Diagnosis:**
-```bash
-# Check ownership of volume directories
-ls -la ~/data/wordpress
-ls -la ~/data/mariadb
-
-# Check logs for permission errors
-docker logs wordpress | grep -i permission
-```
-
-**Solutions:**
-
-1. **Fix directory ownership:**
-```bash
-# On the host machine
-sudo chown -R $(whoami):$(whoami) ~/data/
-
-# Or if you want Docker user (www-data) to own it:
-sudo chown -R 33:33 ~/data/wordpress  # 33 = www-data UID
-sudo chown -R 999:999 ~/data/mariadb  # 999 = mysql UID
-```
-
-2. **Recreate volumes:**
-```bash
-make fclean  # Removes everything
-make         # Rebuilds and recreates
-```
-
----
-
-#### Issue 4: SSL Certificate Warnings
-
-**Symptoms:**
-- Browser shows "Your connection is not private"
-- Certificate error in browser
-
-**This is expected!** Self-signed certificates are not trusted by browsers.
-
-**Solutions:**
-
-1. **Accept the certificate:**
-   - Click "Advanced" in your browser
-   - Click "Proceed to eahmeti.42.fr (unsafe)"
-   - This is safe in a development/learning environment
-
-2. **Verify certificate was generated:**
-```bash
-docker exec -it nginx ls -la /etc/nginx/ssl/
-# Should show:
-# nginx.crt (certificate)
-# nginx.key (private key)
-
-# Check certificate details:
-docker exec -it nginx openssl x509 -in /etc/nginx/ssl/nginx.crt -text -noout
-# Should show CN=eahmeti.42.fr
-```
-
----
-
-#### Issue 5: "Container keeps restarting"
-
-**Symptoms:**
-- `docker ps` shows container with status "Restarting"
-- Container appears and disappears repeatedly
-
-**Diagnosis:**
-```bash
-# Check container logs
-docker logs mariadb      # or wordpress, or nginx
-docker logs --tail 50 mariadb
-
-# Check exit code
-docker inspect mariadb --format='{{.State.ExitCode}}'
-```
-
-**Solutions:**
-
-1. **Check for syntax errors in scripts:**
-```bash
-# Test bash script syntax
-docker run --rm -v $(pwd)/srcs/requirements/mariadb/tools:/scripts \
-  debian:bullseye bash -n /scripts/init-db.sh
-```
-
-2. **Check for missing dependencies:**
-```bash
-# Enter container manually
-docker run -it --entrypoint /bin/bash inception_mariadb
-
-# Then manually run the init script
-/usr/local/bin/init-db.sh
-# Look for errors
-```
-
-3. **Verify ENTRYPOINT doesn't exit:**
-```dockerfile
-# ✅ Good - exec keeps process running
-ENTRYPOINT ["/usr/local/bin/init-db.sh"]
-# init-db.sh ends with: exec mysqld --user=mysql
-
-# ❌ Bad - script exits after running
-ENTRYPOINT ["/usr/local/bin/init-db.sh"]
-# init-db.sh ends with: mysqld --user=mysql (no exec)
-```
-
----
-
-#### Issue 6: Changes to WordPress don't persist
-
-**Symptoms:**
-- Upload files → restart container → files are gone
-- Install plugin → restart → plugin disappeared
-
-**Diagnosis:**
-```bash
-# Check if volume is mounted correctly
-docker inspect wordpress --format='{{json .Mounts}}' | python3 -m json.tool
-
-# Check if directory exists on host
-ls -la ~/data/wordpress
-```
-
-**Solutions:**
-
-1. **Verify volume configuration:**
-```yaml
-# In docker-compose.yml
-volumes:
-  wordpress_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${HOME}/data/wordpress  # Must exist!
-```
-
-2. **Create directory before starting:**
-```bash
-make setup  # Creates ~/data/mariadb and ~/data/wordpress
-```
-
-3. **Check volume is actually mounted:**
-```bash
-docker exec -it wordpress df -h | grep wordpress
-# Should show mount point
-```
 
 ---
 
