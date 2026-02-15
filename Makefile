@@ -8,7 +8,7 @@ NAME = inception
 COMPOSE_FILE = srcs/docker-compose.yml
 
 # Dossiers de données sur l'hôte
-DATA_DIR = /home/ubuntu/data
+DATA_DIR = $(HOME)/data
 MARIADB_DATA = $(DATA_DIR)/mariadb
 WORDPRESS_DATA = $(DATA_DIR)/wordpress
 
