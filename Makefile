@@ -22,7 +22,7 @@ NC = \033[0m # No Color
 # Règle par défaut : build + up
 #──────────────────────────────────────────────────────────────
 
-all: setup all
+all: setup build up
 
 #──────────────────────────────────────────────────────────────
 # Configuration initiale
