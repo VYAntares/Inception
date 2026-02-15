@@ -567,7 +567,7 @@ When a user visits `https://eahmeti.42.fr`:
    ├──────────────────┼──────────────────┤
    │ NGINX serves     │ NGINX forwards   │
    │ directly         │ to WordPress     │
-   │ ⚡ Fast          │ via FastCGI      │
+   │ ⚡ Fast           │ via FastCGI      │
    └─────────────────────────────────────┘
    
 5️⃣ PHP Processing (if needed)
