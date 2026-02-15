@@ -51,7 +51,7 @@ up:
 	@echo "$(YELLOW)Starting containers...$(NC)"
 	@docker compose -f $(COMPOSE_FILE) up -d
 	@echo "$(GREEN)✓ Containers are running$(NC)"
-	@echo "$(GREEN)Access your site at: https://eahmeti.42.fr$(hNC)"
+	@echo "$(GREEN)Access your site at: https://eahmeti.42.fr$(NC)"
 
 #──────────────────────────────────────────────────────────────
 # Arrêt des conteneurs
