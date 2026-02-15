@@ -50,13 +50,13 @@ volumes:
     driver_opts:
       type: none                          # ← Pas de système de fichiers spécial
       o: bind                             # ← "bind" = lie un dossier hôte
-      device: /home/ubuntu/data/mariadb   
+      device: ${HOME}/data/mariadb   
   wordpress_data:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /home/ubuntu/data/wordpress
+      device: ${HOME}/data/wordpress
 
 networks:
   inception:
